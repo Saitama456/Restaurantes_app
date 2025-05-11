@@ -1,6 +1,6 @@
 # clientes_window.py
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-import sqlite3
+import requests  
 
 class ClientesWindow(QWidget):
     def __init__(self):
@@ -26,13 +26,18 @@ class ClientesWindow(QWidget):
 
         self.setLayout(layout)
 
-    def guardar_cliente(self):
-        conn = sqlite3.connect("db.sqlite3")
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO Rubrica_clientes (nombre, correo_electronico, telefono) VALUES (?, ?, ?)",
-                       (self.nombre.text(), self.email.text(), self.telefono.text()))
-        conn.commit()
-        conn.close()
+    def guardar_cliente(self):  
+        datos = {
+            "nombre": self.nombre.text(),
+            "correo": self.email.text(),
+            "telefono": self.telefono.text()
+        }
 
-        QMessageBox.information(self, "Éxito", "Cliente guardado correctamente.")
-        self.close()
+        try:
+            response = requests.post("http://localhost:8000/api/clientes/", json=datos)
+            if response.status_code == 201:
+                QMessageBox.information(self, "Éxito", "Cliente registrado correctamente.")
+            else:
+                QMessageBox.warning(self, "Error", f"No se pudo registrar el cliente.\n{response.text}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error de conexión", str(e))
