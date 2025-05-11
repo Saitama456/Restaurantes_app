@@ -21,8 +21,33 @@ class MesaViewSet(viewsets.ModelViewSet):
     queryset = Mesa.objects.all()
     serializer_class = MesaSerializer
 
+from rest_framework import status
+
 class ReservaViewSet(viewsets.ModelViewSet):
     queryset = Reserva.objects.all()
     serializer_class = ReservaSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        mesa_id = data.get('mesa')
+        fecha = data.get('fecha')
+        hora = data.get('hora')
+
+        # Verificar si ya existe una reserva confirmada para esa mesa en esa fecha y hora
+        ya_reservada = Reserva.objects.filter(
+            mesa_id=mesa_id,
+            fecha=fecha,
+            hora=hora,
+            estado='confirmada'
+        ).exists()
+
+        if ya_reservada:
+            return Response(
+                {"error": "La mesa ya está reservada en ese horario."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().create(request, *args, **kwargs)
+
 
 # Create your views here.
