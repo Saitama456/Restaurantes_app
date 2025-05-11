@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cliente, Reserva
+from .models import Cliente, Reserva, Mesa
 
 class ReservaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,5 +13,8 @@ class ClienteSerializer(serializers.ModelSerializer):
         model = Cliente
         fields = ['id', 'nombre', 'correo', 'telefono', 'reservas']
 
-   
+class MesaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mesa
+        fields = '__all__'   
 

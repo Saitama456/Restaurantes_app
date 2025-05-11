@@ -37,7 +37,7 @@ class VentanaPrincipal(QWidget):
         self.reservas_window = ReservasWindow()
         self.reservas_window.show()
     
-    def abrir_Mesas(self):
-        self.mesas_windows = MesasWindow
+    def abrir_mesas(self):
+        self.mesas_windows = MesasWindow()
         self.mesas_windows.show()
 
