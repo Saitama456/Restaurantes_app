@@ -1,12 +1,11 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Cliente
+from .models import Cliente, Mesa, Reserva
 from .serializers import ClienteSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Mesa
-from .serializers import MesaSerializer
+from .serializers import MesaSerializer, ReservaSerializer
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
@@ -22,6 +21,8 @@ class MesaViewSet(viewsets.ModelViewSet):
     queryset = Mesa.objects.all()
     serializer_class = MesaSerializer
 
-
+class ReservaViewSet(viewsets.ModelViewSet):
+    queryset = Reserva.objects.all()
+    serializer_class = ReservaSerializer
 
 # Create your views here.
