@@ -1,6 +1,6 @@
 # reservas_window.py
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-import sqlite3
+import requests
 
 class ReservasWindow(QWidget):
     def __init__(self):
@@ -16,9 +16,9 @@ class ReservasWindow(QWidget):
         self.num_personas = QLineEdit()
         self.estado = QLineEdit()
 
-        layout.addWidget(QLabel("Nombre del Cliente:"))
+        layout.addWidget(QLabel("ID del Cliente:"))
         layout.addWidget(self.id_cliente)
-        layout.addWidget(QLabel(" Mesa:"))
+        layout.addWidget(QLabel("ID de Mesa:"))
         layout.addWidget(self.id_mesa)
         layout.addWidget(QLabel("Fecha (YYYY-MM-DD):"))
         layout.addWidget(self.fecha)
@@ -36,22 +36,22 @@ class ReservasWindow(QWidget):
         self.setLayout(layout)
 
     def guardar_reserva(self):
-        conn = sqlite3.connect("db.sqlite3")
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO Rubrica_reservas 
-            (id_cliente, id_mesa, fecha, hora, numero_personas, estado)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            self.id_cliente.text(),
-            self.id_mesa.text(),
-            self.fecha.text(),
-            self.hora.text(),
-            self.num_personas.text(),
-            self.estado.text()
-        ))
-        conn.commit()
-        conn.close()
+        datos = {
+            "cliente": int(self.id_cliente.text()),
+            "mesa": int(self.id_mesa.text()),
+            "fecha": self.fecha.text(),
+            "hora": self.hora.text(),
+            "numero_personas": int(self.num_personas.text()),
+            "estado": self.estado.text().lower()
+        }
 
-        QMessageBox.information(self, "Éxito", "Reserva guardada correctamente.")
-        self.close()
+        try:
+            response = requests.post("http://localhost:8000/api/reservas/", json=datos)
+            if response.status_code == 201:
+                QMessageBox.information(self, "Éxito", "Reserva guardada correctamente.")
+                self.close()
+            else:
+                QMessageBox.warning(self, "Error", f"No se pudo guardar la reserva.\n{response.text}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error de conexión", str(e))
+ 
