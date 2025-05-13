@@ -87,9 +87,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'rubrica',
-        'USER': 'postgres',
-        'PASSWORD': 'Isamay2',
-        'HOST': 'localhost',
+        'USER': 'benichi',
+        'PASSWORD': 'FbX87xqf8QhHmiBF3bAp895M02VXRGGU',
+        'HOST': 'dpg-d0h4pj63jp1c73fhp1ng-a.oregon-postgres.render.com',
         'PORT': '5432',
     }
 }
