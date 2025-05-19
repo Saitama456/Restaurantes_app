@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import MesaSerializer, ReservaSerializer
+from django.core.mail import send_mail
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
@@ -27,27 +28,40 @@ class ReservaViewSet(viewsets.ModelViewSet):
     queryset = Reserva.objects.all()
     serializer_class = ReservaSerializer
 
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        mesa_id = data.get('mesa')
-        fecha = data.get('fecha')
-        hora = data.get('hora')
+    def perform_create(self, serializer):
+        reserva = serializer.save()
+        self.enviar_correo(reserva, nuevo=True)
 
-        # Verificar si ya existe una reserva confirmada para esa mesa en esa fecha y hora
-        ya_reservada = Reserva.objects.filter(
-            mesa_id=mesa_id,
-            fecha=fecha,
-            hora=hora,
-            estado='confirmada'
-        ).exists()
+    def perform_update(self, serializer):
+        reserva = serializer.save()
+        self.enviar_correo(reserva, nuevo=False)
 
-        if ya_reservada:
-            return Response(
-                {"error": "La mesa ya está reservada en ese horario."},
-                status=status.HTTP_400_BAD_REQUEST
+    def enviar_correo(self, reserva, nuevo=True):
+        try:
+            cliente = Cliente.objects.get(id=reserva.cliente_id)
+            mesa = Mesa.objects.get(id=reserva.mesa_id)
+
+            asunto = "✅ Nueva Reserva Confirmada" if nuevo else "✏️ Reserva Modificada"
+            mensaje = (
+                f"Hola {cliente.nombre},\n\n"
+                f"{'Se ha creado una nueva reserva' if nuevo else 'Tu reserva ha sido actualizada'}.\n\n"
+                f"📅 Fecha: {reserva.fecha}\n"
+                f"⏰ Hora: {reserva.hora}\n"
+                f"🍽️ Mesa asignada: {mesa.id} (Capacidad: {mesa.capacidad})\n"
+                f"👥 Número de personas: {reserva.numero_personas}\n"
+                f"📌 Estado: {reserva.estado}\n\n"
+                f"Gracias por elegir nuestro restaurante.\n"
             )
 
-        return super().create(request, *args, **kwargs)
+            send_mail(
+                subject=asunto,
+                message=mensaje,
+                from_email='admin@restaurante.com',
+                recipient_list=[cliente.correo],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print("❌ Error al enviar correo:", e)
 
 
 # Create your views here.
