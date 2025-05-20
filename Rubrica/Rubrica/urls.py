@@ -28,7 +28,6 @@ router.register(r'reservas', ReservaViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/is_admin/', AdminStatusView.as_view(), name='is_admin'),
     path('api/', include(router.urls))
